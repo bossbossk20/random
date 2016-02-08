@@ -1,114 +1,129 @@
-var generator = {
-  min: 1,
-  max: 17,
+var options = ["Mint", "Tak", "Chat", "Prite", "Oom", "Chai", "Ping", "Dear", "Golf", "1", "Bank","Ken","BB","Pai","Fen","Boy","Koy"];
+
+var startAngle = 0;
+var arc = Math.PI / (options.length / 2);
+var spinTimeout = null;
+
+var spinArcStart = 10;
+var spinTime = 0;
+var spinTimeTotal = 0;
+
+var ctx;
+
+document.getElementById("spin").addEventListener("click", spin);
+
+function byte2Hex(n) {
+  var nybHexString = "0123456789ABCDEF";
+  return String(nybHexString.substr((n >> 4) & 0x0F,1)) + nybHexString.substr(n & 0x0F,1);
+}
+
+function RGB2Color(r,g,b) {
+  return '#' + byte2Hex(r) + byte2Hex(g) + byte2Hex(b);
+}
+
+function getColor(item, maxitem) {
+  var phase = 0;
+  var center = 128;
+  var width = 127;
+  var frequency = Math.PI*2/maxitem;
   
-  /**
-   * Generate a random number
-   */
-  getRandom: function () {
-    return Math.round(Math.random() * (this.max - this.min) + this.min);
-  },
+  red   = Math.sin(frequency*item+2+phase) * width + center;
+  green = Math.sin(frequency*item+0+phase) * width + center;
+  blue  = Math.sin(frequency*item+4+phase) * width + center;
   
-  /**
-   * Set the lower number boundry
-   */
-  setMin: function (newMin) {
-    this.min = parseInt(newMin);
-  },
-  
-  /**
-   * Set the higher number boundry
-   */
-  setMax: function (newMax) {
-    this.max = parseInt(newMax);
-  }
-};
+  return RGB2Color(red,green,blue);
+}
 
-var number = document.querySelector('.number');
-var dupicate = 0
-var keep = [16]
- // keep[0] = ""
-document.querySelector('.generate').onclick = function () {
-	number.textContent = generator.getRandom();
-  
-  // console.log(dupicate)
+function drawRouletteWheel() {
+  var canvas = document.getElementById("canvas");
+  if (canvas.getContext) {
+    var outsideRadius = 200;
+    var textRadius = 160;
+    var insideRadius = 125;
 
-   if(number.textContent==1){
-    keep[dupicate] = 1 
-    number.textContent="Mint"
-    
+    ctx = canvas.getContext("2d");
+    ctx.clearRect(0,0,500,500);
 
-  }
-  if(number.textContent==2){
-    keep[dupicate] = 2
-    number.textContent="TAK"
-    
-  }
-  if(number.textContent==3){
-    keep[dupicate] = 3
-    number.textContent="Chat"
-  }
-  if(number.textContent==4){
-    keep[dupicate] = 4
-    number.textContent="Prite"
-  }
-  
-   if(number.textContent==5){
-    keep[dupicate] = 5
-    number.textContent="Oom"
-  }
-   if(number.textContent==6){
-    keep[dupicate] = 6
-    number.textContent="Chai"
-  }
-  if(number.textContent==7){
-    keep[dupicate] = 7
-    number.textContent="Ping"
-  }
-  if(number.textContent==8){
-    keep[dupicate] = 8
-    number.textContent="Dear"
-  }
-   if(number.textContent==9){
-    keep[dupicate] = 9
-    number.textContent="Golf"
-  }
-   if(number.textContent==10){
-    keep[dupicate] = 10
-    number.textContent="1"
-  }
-   if(number.textContent==11){
-    keep[dupicate] = 11
-    number.textContent="Bank"
-  }
-   if(number.textContent==12){
-    keep[dupicate] = 12
-    number.textContent="Ken"
-  }
-   if(number.textContent==13){
-    keep[dupicate] = 13
-    number.textContent="BB"
-  }
-   if(number.textContent==14){
-    keep[dupicate] = 14
-    number.textContent="Pai"
-  }
-   if(number.textContent==15){
-    keep[dupicate] = 15
-    number.textContent="Fen"
-  }
-   if(number.textContent==16){
-    keep[dupicate] = 16
-    number.textContent="Boy"
-  }
-  if(number.textContent==17){
-    keep[dupicate] = 17
-    number.textContent="Koy"
-  }
-  console.log(keep[dupicate])
-  dupicate++
+    ctx.strokeStyle = "black";
+    ctx.lineWidth = 2;
 
+    ctx.font = 'bold 12px Helvetica, Arial';
 
+    for(var i = 0; i < options.length; i++) {
+      var angle = startAngle + i * arc;
+      //ctx.fillStyle = colors[i];
+      ctx.fillStyle = getColor(i, options.length);
 
-};
+      ctx.beginPath();
+      ctx.arc(250, 250, outsideRadius, angle, angle + arc, false);
+      ctx.arc(250, 250, insideRadius, angle + arc, angle, true);
+      ctx.stroke();
+      ctx.fill();
 
+      ctx.save();
+      ctx.shadowOffsetX = -1;
+      ctx.shadowOffsetY = -1;
+      ctx.shadowBlur    = 0;
+      ctx.shadowColor   = "rgb(220,220,220)";
+      ctx.fillStyle = "black";
+      ctx.translate(250 + Math.cos(angle + arc / 2) * textRadius, 
+                    250 + Math.sin(angle + arc / 2) * textRadius);
+      ctx.rotate(angle + arc / 2 + Math.PI / 2);
+      var text = options[i];
+      ctx.fillText(text, -ctx.measureText(text).width / 2, 0);
+      ctx.restore();
+    } 
+
+    //Arrow
+    ctx.fillStyle = "black";
+    ctx.beginPath();
+    ctx.moveTo(250 - 4, 250 - (outsideRadius + 5));
+    ctx.lineTo(250 + 4, 250 - (outsideRadius + 5));
+    ctx.lineTo(250 + 4, 250 - (outsideRadius - 5));
+    ctx.lineTo(250 + 9, 250 - (outsideRadius - 5));
+    ctx.lineTo(250 + 0, 250 - (outsideRadius - 13));
+    ctx.lineTo(250 - 9, 250 - (outsideRadius - 5));
+    ctx.lineTo(250 - 4, 250 - (outsideRadius - 5));
+    ctx.lineTo(250 - 4, 250 - (outsideRadius + 5));
+    ctx.fill();
+  }
+}
+
+function spin() {
+  spinAngleStart = Math.random() * 10 + 10;
+  spinTime = 0;
+  spinTimeTotal = Math.random() * 3 + 4 * 1000;
+  rotateWheel();
+}
+
+function rotateWheel() {
+  spinTime += 30;
+  if(spinTime >= spinTimeTotal) {
+    stopRotateWheel();
+    return;
+  }
+  var spinAngle = spinAngleStart - easeOut(spinTime, 0, spinAngleStart, spinTimeTotal);
+  startAngle += (spinAngle * Math.PI / 180);
+  drawRouletteWheel();
+  spinTimeout = setTimeout('rotateWheel()', 30);
+}
+
+function stopRotateWheel() {
+  clearTimeout(spinTimeout);
+  var degrees = startAngle * 180 / Math.PI + 90;
+  var arcd = arc * 180 / Math.PI;
+  var index = Math.floor((360 - degrees % 360) / arcd);
+  ctx.save();
+  ctx.font = 'bold 30px Helvetica, Arial';
+  var text = options[index]
+  ctx.fillText(text, 250 - ctx.measureText(text).width / 2, 250 + 10);
+  ctx.restore();
+}
+
+function easeOut(t, b, c, d) {
+  var ts = (t/=d)*t;
+  var tc = ts*t;
+  return b+c*(tc + -3*ts + 3*t);
+}
+
+drawRouletteWheel();

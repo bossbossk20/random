@@ -99,9 +99,7 @@ angular.module('todoApp', [])
     var count = 0
 
       todoList.showlist = function () {
-          if (count > todoList.ranNums.length) {
-            alert("หมดเเล้ว")
-          }
+
           todoList.single_name = todoList.ranNums[count].name
           todoList.single_pic  = todoList.ranNums[count].pic
           count++
